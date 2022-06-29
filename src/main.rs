@@ -1,11 +1,20 @@
 use std::{
     env::{self, VarError},
-    path::Path,
+    path::Path, process::exit,
 };
 mod todo_list;
 fn main() {
-    let path = setup_path().expect("GLOBAL_TODO_PATH not set!");
+    let path = setup_path();
+    if path.is_err(){
+        println!("GLOBAL_TODO_PATH variable not set!\nTry adding 'export GLOBAL_TODO_PATH=/home/$USER/.todo' to your shell");
+        exit(-1);
+    }
+    let path = path.expect("GLOBAL_TODO_PATH not set");
     let working_path = path.as_str();
+    if !Path::new(path.as_str()).exists(){
+        std::fs::File::create(path.as_str()).expect("Failed to intialize todo list");
+    }
+    
 
     let args: Vec<String> = env::args().collect();
     let action = args.get(1);
@@ -13,23 +22,22 @@ fn main() {
 
     match action {
         None => {
-            print!("{}", list)
+            print!("{}", list);
+            return;
         }
         Some(x) => match x.to_lowercase().as_str() {
-            "add" => {
+            "add" | "a" => {
                 list.add_item(args.get(2).expect("No item to add!"));
-                list.write_file(working_path);
             }
-            "rm" => {
-                let index: usize = args
-                    .get(2)
-                    .expect("Invalid index")
-                    .parse()
-                    .expect("Failed to convert index");
+            "rm" | "r" => {
+                let index: usize = get_arg_index(&args);
                 list.remove_item(index - 1);
-                list.write_file(working_path);
             }
-            "new" => {
+            "complete" | "c" => {
+                let index: usize = get_arg_index(&args);
+                list.complete_item(index - 1);
+            }
+            "new" | "n" => {
                 if Path::new(".todo").exists() {
                     println!("Failure: A todo list already exists here");
                 } else {
@@ -40,11 +48,17 @@ fn main() {
                     )
                 }
             }
+            "edit" | "e" => {
+                let index: usize = get_arg_index(&args);
+                let new_text = args.get(3).expect("Invalid new_text");
+                list.edit_item(index - 1, new_text);
+            }
             _ => {
                 println!("Invalid action provided")
             }
         },
     }
+    list.write_file(working_path);
 }
 
 fn setup_path() -> Result<String, VarError> {
@@ -53,4 +67,11 @@ fn setup_path() -> Result<String, VarError> {
     } else {
         env::var("GLOBAL_TODO_PATH")
     }
+}
+
+fn get_arg_index(args: &[String]) -> usize {
+    args.get(2)
+        .expect("Invalid index")
+        .parse()
+        .expect("Failed to convert index")
 }

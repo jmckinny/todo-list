@@ -40,6 +40,20 @@ impl TodoList {
     pub fn is_empty(&self) -> bool {
         self.list.is_empty()
     }
+
+    pub fn complete_item(&mut self, index: usize) {
+        let item = self.list.get(index).expect("Invalid index");
+        self.list[index] = item
+            .chars()
+            .map(|f| "\u{0336}".to_owned() + &f.to_string() + "\u{0336}")
+            .collect();
+        println!("Completed: {}", self.list.get(index).unwrap());
+    }
+
+    pub fn edit_item(&mut self, index: usize, new_text: &str) {
+        self.list[index] = new_text.to_string();
+        println!("Updated: {}. {}", index + 1, new_text);
+    }
 }
 
 impl fmt::Display for TodoList {
