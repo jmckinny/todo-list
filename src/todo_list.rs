@@ -45,6 +45,7 @@ impl TodoList {
         let item = self.list.get(index).expect("Invalid index");
         self.list[index] = item
             .chars()
+            // Note: \u0336 is the strikethough unicode symbol
             .map(|f| "\u{0336}".to_owned() + &f.to_string() + "\u{0336}")
             .collect();
         println!("Completed: {}", self.list.get(index).unwrap());
