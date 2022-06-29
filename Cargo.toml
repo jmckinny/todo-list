@@ -2,7 +2,12 @@
 name = "todo-list"
 version = "0.1.0"
 edition = "2021"
-
+authors = ["Justin McKinney"]
+repository = "https://github.com/jmckinny/todo-list"
+license = "MIT"
+description = """
+An ultra simple todo list manager
+"""
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
