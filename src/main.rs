@@ -5,7 +5,6 @@ use std::{
 };
 mod todo_list;
 fn main() {
-    
     let path = setup_path();
     let working_path = path.as_str();
 
@@ -54,7 +53,7 @@ fn main() {
     list.write_file(working_path);
 }
 
-fn setup_path() -> String{
+fn setup_path() -> String {
     let path = get_path();
     if path.is_err() {
         println!("GLOBAL_TODO_PATH variable not set!\nTry adding 'export GLOBAL_TODO_PATH=/home/$USER/.todo' to your shell");
