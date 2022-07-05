@@ -5,16 +5,9 @@ use std::{
 };
 mod todo_list;
 fn main() {
+    
     let path = setup_path();
-    if path.is_err() {
-        println!("GLOBAL_TODO_PATH variable not set!\nTry adding 'export GLOBAL_TODO_PATH=/home/$USER/.todo' to your shell");
-        exit(-1);
-    }
-    let path = path.expect("GLOBAL_TODO_PATH not set");
     let working_path = path.as_str();
-    if !Path::new(path.as_str()).exists() {
-        std::fs::File::create(path.as_str()).expect("Failed to intialize todo list");
-    }
 
     let args: Vec<String> = env::args().collect();
     let action = args.get(1);
@@ -61,7 +54,20 @@ fn main() {
     list.write_file(working_path);
 }
 
-fn setup_path() -> Result<String, VarError> {
+fn setup_path() -> String{
+    let path = get_path();
+    if path.is_err() {
+        println!("GLOBAL_TODO_PATH variable not set!\nTry adding 'export GLOBAL_TODO_PATH=/home/$USER/.todo' to your shell");
+        exit(-1);
+    }
+    let path = path.expect("GLOBAL_TODO_PATH not set");
+    if !Path::new(path.as_str()).exists() {
+        std::fs::File::create(path.as_str()).expect("Failed to intialize todo list");
+    }
+    path
+}
+
+fn get_path() -> Result<String, VarError> {
     if Path::new(".todo").exists() {
         Ok(".todo".to_string())
     } else {
