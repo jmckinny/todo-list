@@ -7,6 +7,8 @@ use std::{
 use import::import_todos;
 mod import;
 mod todo_list;
+
+const DEFAULT_DIR: &str = "src/";
 // TODO: test
 fn main() {
     let path = setup_path();
@@ -50,7 +52,8 @@ fn main() {
                 list.edit_item(index - 1, new_text);
             }
             "import" | "i" => {
-                let additons = import_todos();
+                let directory = args.get(2).unwrap_or(&DEFAULT_DIR.to_string()).to_string();
+                let additons = import_todos(directory.as_str()).expect("Failed to import TODOs");
                 for item in additons {
                     if !list.contains_item(item.as_str()) {
                         list.add_item(item.as_str());
