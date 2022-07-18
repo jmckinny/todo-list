@@ -33,7 +33,7 @@ impl TodoList {
     }
 
     pub fn remove_item(&mut self, index: usize) {
-        println!("Removed: {}", self.list.get(index).expect("Invalid index"));
+        println!("Removed: {}", self.list.get(index).expect(format!("Invalid index {}", index).as_str()));
         self.list.remove(index);
     }
 

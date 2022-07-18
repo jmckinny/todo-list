@@ -1,7 +1,7 @@
 use std::{
     env::{self, VarError},
     path::Path,
-    process::exit,
+    process::exit, num::ParseIntError,
 };
 
 use import::import_todos;
@@ -28,12 +28,16 @@ fn main() {
                 list.add_item(args.get(2).expect("No item to add!"));
             }
             "rm" | "r" => {
-                let index: usize = get_arg_index(&args);
-                list.remove_item(index - 1);
+                let (start,end) = get_arg_index(&args);
+                for i in (start..=end).rev(){
+                    list.remove_item(i-1);
+                }
             }
             "complete" | "c" => {
-                let index: usize = get_arg_index(&args);
-                list.complete_item(index - 1);
+                let (start,end) = get_arg_index(&args);
+                for i in (start..=end).rev(){
+                    list.complete_item(i-1);
+                }
             }
             "new" | "n" => {
                 if Path::new(".todo").exists() {
@@ -47,7 +51,7 @@ fn main() {
                 }
             }
             "edit" | "e" => {
-                let index: usize = get_arg_index(&args);
+                let index: usize = args.get(2).expect("Invalid index").parse().expect("Failed to parse index");
                 let new_text = args.get(3).expect("Invalid new_text");
                 list.edit_item(index - 1, new_text);
             }
@@ -89,9 +93,17 @@ fn get_path() -> Result<String, VarError> {
     }
 }
 
-fn get_arg_index(args: &[String]) -> usize {
-    args.get(2)
-        .expect("Invalid index")
-        .parse()
-        .expect("Failed to convert index")
+fn get_arg_index(args: &[String]) -> (usize,usize) {
+    let argument = args.get(2).expect("No index provided");
+    if let Ok(num) = argument.parse(){
+        (num,num)
+    }else{
+        parse_range(argument).expect("Invalid range")
+    }
+}
+
+fn parse_range(txt: &str) -> Result<(usize,usize),ParseIntError>{
+    let first = txt.split('-').take(1).collect::<String>().parse()?;
+    let second = txt.split('-').skip(1).collect::<String>().parse()?;
+    Ok((first,second))
 }
