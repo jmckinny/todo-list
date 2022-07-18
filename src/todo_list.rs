@@ -55,6 +55,15 @@ impl TodoList {
         self.list[index] = new_text.to_string();
         println!("Updated: {}. {}", index + 1, new_text);
     }
+
+    pub fn contains_item(&self, item: &str) -> bool {
+        for entry in self.list.iter() {
+            if entry.eq(item) {
+                return true;
+            }
+        }
+        false
+    }
 }
 
 impl fmt::Display for TodoList {

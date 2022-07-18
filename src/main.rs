@@ -3,7 +3,11 @@ use std::{
     path::Path,
     process::exit,
 };
+
+use import::import_todos;
+mod import;
 mod todo_list;
+// TODO: test
 fn main() {
     let path = setup_path();
     let working_path = path.as_str();
@@ -44,6 +48,14 @@ fn main() {
                 let index: usize = get_arg_index(&args);
                 let new_text = args.get(3).expect("Invalid new_text");
                 list.edit_item(index - 1, new_text);
+            }
+            "import" | "i" => {
+                let additons = import_todos();
+                for item in additons {
+                    if !list.contains_item(item.as_str()) {
+                        list.add_item(item.as_str());
+                    }
+                }
             }
             _ => {
                 println!("Invalid action provided")
