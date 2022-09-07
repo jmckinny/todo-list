@@ -69,7 +69,7 @@ fn main() {
                     }
                 }
             }
-            "finish" | "f" =>{
+            "finish" | "f" => {
                 list.finish_items();
             }
             _ => {

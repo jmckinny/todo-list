@@ -70,9 +70,9 @@ impl TodoList {
         false
     }
 
-    pub fn finish_items(&mut self){
-        for i in (0..=self.list.len()-1).rev(){
-            if self.list.get(i).unwrap().starts_with("\u{0336}"){
+    pub fn finish_items(&mut self) {
+        for i in (0..=self.list.len() - 1).rev() {
+            if self.list.get(i).unwrap().starts_with('\u{0336}') {
                 self.remove_item(i);
             }
         }
