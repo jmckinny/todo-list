@@ -10,7 +10,7 @@ mod import;
 mod todo_list;
 
 const DEFAULT_DIR: &str = "src/";
-// TODO: test
+
 fn main() {
     let path = setup_path();
     let working_path = path.as_str();
@@ -68,6 +68,9 @@ fn main() {
                         list.add_item(item.as_str());
                     }
                 }
+            }
+            "finish" | "f" =>{
+                list.finish_items();
             }
             _ => {
                 println!("Invalid action provided")
