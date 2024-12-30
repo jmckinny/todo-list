@@ -58,6 +58,10 @@ fn get_todo_file() -> PathBuf {
     default_todofile
 }
 
+fn save_current_todo_list(todo_list: &TodoList) -> Result<(), std::io::Error> {
+    todo_list.save_to_file(&get_todo_file())
+}
+
 fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoError> {
     let command: &str = args.get(1).map(String::as_str).unwrap_or("list");
     match command {
@@ -66,18 +70,22 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
         }
         "a" | "add" | "append" => {
             commands::add::add_item(todo_list, args)?;
+            save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
         "r" | "rm" | "remove" => {
             commands::remove::remove_item_index(todo_list, args)?;
+            save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
         "c" | "check" | "complete" => {
             commands::complete::complete_item_index(todo_list, args)?;
+            save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
         "u" | "un" | "uncheck" | "uncomplete" => {
             commands::complete::uncomplete_item_index(todo_list, args)?;
+            save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
         _ => {
