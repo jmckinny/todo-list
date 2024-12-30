@@ -29,6 +29,17 @@ impl TodoList {
         Ok(())
     }
 
+    pub fn remove_items(&mut self, start: usize, end: usize) -> Result<(), TodoError> {
+        if self.invalid_index(start) || self.invalid_index(end) {
+            return Err(TodoError::InvalidItem(format!(
+                "Item indices '{}-{}' does not exist",
+                start, end
+            )));
+        }
+        self.items.drain(start - 1..=end - 1);
+        Ok(())
+    }
+
     pub fn complete_item(&mut self, index: usize) -> Result<(), TodoError> {
         if self.invalid_index(index) {
             return Err(TodoError::InvalidItem(format!(
