@@ -1,92 +1,46 @@
-use core::fmt;
-use std::{
-    fs::File,
-    io::{BufRead, BufReader, Write},
-    path::Path,
-};
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct TodoList {
-    list: Vec<String>,
+    items: Vec<TodoItem>,
 }
 
-impl TodoList {
-    pub fn from_file(path: impl AsRef<Path>) -> Self {
-        let mut list = Vec::new();
-        let reader = BufReader::new(File::open(path).expect("TODO list file not found"));
-        for line in reader.lines() {
-            list.push(line.expect("Failed to read TODO list line"));
-        }
-        TodoList { list }
-    }
+#[derive(Debug)]
+struct TodoItem {
+    content: String,
+}
 
-    pub fn write_file(&self, path: impl AsRef<Path>) {
-        let mut file = File::create(path).expect("Unable to create file!");
-        for item in &self.list {
-            writeln!(file, "{}", item).expect("Failed to write line to file!");
-        }
-    }
+impl FromStr for TodoList {
+    type Err = std::io::Error;
 
-    pub fn add_item(&mut self, to_add: &str) {
-        self.list.push(to_add.to_string());
-        println!("Added: {}", to_add);
-    }
-
-    pub fn remove_item(&mut self, index: usize) {
-        println!(
-            "Removed: {}",
-            self.list
-                .get(index)
-                .unwrap_or_else(|| panic!("Invalid index {}", index))
-        );
-        self.list.remove(index);
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.list.is_empty()
-    }
-
-    pub fn complete_item(&mut self, index: usize) {
-        let item = self.list.get(index).expect("Invalid index");
-        self.list[index] = item
-            .chars()
-            // Note: \u0336 is the strikethough unicode symbol
-            .map(|f| "\u{0336}".to_owned() + &f.to_string() + "\u{0336}")
-            .collect();
-        println!("Completed: {}", self.list.get(index).unwrap());
-    }
-
-    pub fn edit_item(&mut self, index: usize, new_text: &str) {
-        self.list[index] = new_text.to_string();
-        println!("Updated: {}. {}", index + 1, new_text);
-    }
-
-    pub fn contains_item(&self, item: &str) -> bool {
-        for entry in self.list.iter() {
-            if entry.eq(item) {
-                return true;
-            }
-        }
-        false
-    }
-
-    pub fn finish_items(&mut self) {
-        for i in (0..=self.list.len() - 1).rev() {
-            if self.list.get(i).unwrap().starts_with('\u{0336}') {
-                self.remove_item(i);
-            }
-        }
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let item_results: Result<Vec<TodoItem>, _> = s.lines().map(|line| line.parse()).collect();
+        let items = item_results?;
+        Ok(TodoList { items })
     }
 }
 
-impl fmt::Display for TodoList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.is_empty() {
-            writeln!(f, "Nothing todo!")?;
-        }
-        for (i, item) in self.list.iter().enumerate() {
+impl std::fmt::Display for TodoList {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, item) in self.items.iter().enumerate() {
             writeln!(f, "{}. {}", i + 1, item)?;
         }
         Ok(())
+    }
+}
+
+impl FromStr for TodoItem {
+    type Err = std::io::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(TodoItem {
+            content: s.to_owned(),
+        })
+    }
+}
+
+impl std::fmt::Display for TodoItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content)
     }
 }
