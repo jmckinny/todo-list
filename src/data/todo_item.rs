@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
 use crate::TodoError;
-const COMPLETED_PREFIX: &str = "- [x]";
-const UNCOMPLETED_PREFIX: &str = "- [ ]";
+pub const COMPLETED_PREFIX: &str = "- [x]";
+pub const UNCOMPLETED_PREFIX: &str = "- [ ]";
 
 #[derive(Debug)]
 pub struct TodoItem {

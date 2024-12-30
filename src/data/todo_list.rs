@@ -5,6 +5,8 @@ use std::str::FromStr;
 
 use crate::todo_error::TodoError;
 
+use super::todo_item::{COMPLETED_PREFIX, UNCOMPLETED_PREFIX};
+
 #[derive(Debug, Default)]
 pub struct TodoList {
     items: Vec<TodoItem>,
@@ -62,9 +64,9 @@ impl TodoList {
         let mut writer = BufWriter::new(file);
         for item in self.items.iter() {
             if item.is_complete() {
-                write!(writer, "- [x] ")?;
+                write!(writer, "{}", COMPLETED_PREFIX)?;
             } else {
-                write!(writer, "- [ ] ")?;
+                write!(writer, "{}", UNCOMPLETED_PREFIX)?;
             }
             writeln!(writer, "{}", item.get_content())?;
         }
