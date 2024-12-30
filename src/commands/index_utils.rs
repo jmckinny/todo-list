@@ -6,7 +6,7 @@ pub enum IndexSelection {
 }
 
 pub fn get_index(args: &[String]) -> Result<IndexSelection, TodoError> {
-    if args.get(2).unwrap_or(&String::new()).contains(",") {
+    if args.get(2).unwrap_or(&String::new()).contains("-") {
         let range = get_index_range(args)?;
         Ok(IndexSelection::Range(range))
     } else {
@@ -31,7 +31,7 @@ pub fn get_single_index(args: &[String]) -> Result<usize, TodoError> {
 pub fn get_index_range(args: &[String]) -> Result<(usize, usize), TodoError> {
     match args.get(2) {
         Some(indexs_str) => {
-            let mut indexes = indexs_str.split(',');
+            let mut indexes = indexs_str.split('-');
             let start = indexes.next().unwrap_or_default().parse()?;
             let end = indexes.next().unwrap_or_default().parse()?;
             Ok((start, end))
