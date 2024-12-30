@@ -1,14 +1,14 @@
 mod commands;
+mod data;
 mod todo_error;
-mod todo_list;
 use std::{
     env,
     io::{self, Write},
     path::Path,
 };
 
+use data::todo_list::TodoList;
 use todo_error::TodoError;
-use todo_list::TodoList;
 
 fn main() -> Result<(), TodoError> {
     let args: Vec<String> = env::args().collect();
@@ -63,7 +63,7 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
         "l" | "list" => {
             commands::list::list_items(todo_list);
         }
-        "a" | "add" => {
+        "a" | "add" | "append" => {
             commands::add::add_item(todo_list, args)?;
             commands::list::list_items(todo_list);
         }

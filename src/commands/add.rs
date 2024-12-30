@@ -1,7 +1,6 @@
-use crate::{
-    todo_error::TodoError,
-    todo_list::{TodoItem, TodoList},
-};
+use crate::data::todo_item::TodoItem;
+use crate::data::todo_list::TodoList;
+use crate::todo_error::TodoError;
 
 pub fn add_item(todo_list: &mut TodoList, args: &[String]) -> Result<(), TodoError> {
     let content = args

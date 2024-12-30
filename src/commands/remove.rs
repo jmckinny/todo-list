@@ -1,4 +1,5 @@
-use crate::{todo_error::TodoError, todo_list::TodoList};
+use crate::data::todo_list::TodoList;
+use crate::TodoError;
 
 pub fn remove_item_index(todo_list: &mut TodoList, args: &[String]) -> Result<(), TodoError> {
     if let Some(index) = args.get(2) {
