@@ -1,4 +1,5 @@
 mod commands;
+mod todo_error;
 mod todo_list;
 use std::{
     env,
@@ -6,16 +7,17 @@ use std::{
     path::Path,
 };
 
+use todo_error::TodoError;
 use todo_list::TodoList;
 
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<(), TodoError> {
     let args: Vec<String> = env::args().collect();
     let mut todo_list = get_todo_list()?;
     run_command(&args, &mut todo_list)?;
     Ok(())
 }
 
-fn get_todo_list() -> Result<TodoList, std::io::Error> {
+fn get_todo_list() -> Result<TodoList, TodoError> {
     let home_todo = format!("{}/.todo", env::var("HOME").expect("$HOME not set"));
     let default_todofile = Path::new(&home_todo);
     let mut todo_file = get_todo_file(default_todofile);
@@ -55,17 +57,19 @@ fn get_todo_file(default: &Path) -> &Path {
     default
 }
 
-fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), std::io::Error> {
+fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoError> {
     let command: &str = args.get(1).map(String::as_str).unwrap_or("list");
     match command {
         "l" | "list" => {
             commands::list::list_items(todo_list);
         }
         "a" | "add" => {
-            todo!()
+            commands::add::add_item(todo_list, args)?;
+            commands::list::list_items(todo_list);
         }
         "r" | "remove" => {
-            todo!()
+            commands::remove::remove_item_index(todo_list, args)?;
+            commands::list::list_items(todo_list);
         }
         _ => {
             eprintln!("Unrecognized command: '{}'", command);
