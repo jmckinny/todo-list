@@ -40,25 +40,18 @@ impl TodoList {
         Ok(())
     }
 
-    pub fn complete_item(&mut self, index: usize) -> Result<(), TodoError> {
+    pub fn set_item_completion(&mut self, index: usize, complete: bool) -> Result<(), TodoError> {
         if self.invalid_index(index) {
             return Err(TodoError::InvalidItem(format!(
                 "Item index '{}' does not exist",
                 index
             )));
         }
-        self.items[index - 1].complete_item();
-        Ok(())
-    }
-
-    pub fn uncomplete_item(&mut self, index: usize) -> Result<(), TodoError> {
-        if self.invalid_index(index) {
-            return Err(TodoError::InvalidItem(format!(
-                "Item index '{}' does not exist",
-                index
-            )));
+        if complete {
+            self.items[index - 1].complete_item();
+        } else {
+            self.items[index - 1].uncomplete_item();
         }
-        self.items[index - 1].uncomplete_item();
         Ok(())
     }
 

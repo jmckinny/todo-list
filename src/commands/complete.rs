@@ -7,7 +7,7 @@ pub fn complete_item_index(todo_list: &mut TodoList, args: &[String]) -> Result<
     let index_selection = get_index(args)?;
     match index_selection {
         IndexSelection::Single(index) => {
-            todo_list.complete_item(index)?;
+            todo_list.set_item_completion(index, true)?;
         }
         IndexSelection::Range((start, end)) => {
             todo!()
@@ -20,7 +20,7 @@ pub fn uncomplete_item_index(todo_list: &mut TodoList, args: &[String]) -> Resul
     let index_selection = get_index(args)?;
     match index_selection {
         IndexSelection::Single(index) => {
-            todo_list.uncomplete_item(index)?;
+            todo_list.set_item_completion(index, false)?;
         }
         IndexSelection::Range((start, end)) => {
             todo!()
