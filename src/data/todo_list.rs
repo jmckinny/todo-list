@@ -1,4 +1,5 @@
 use crate::data::todo_item::TodoItem;
+use std::io::{BufWriter, Write};
 use std::path::Path;
 use std::str::FromStr;
 
@@ -16,7 +17,7 @@ impl TodoList {
     }
 
     pub fn remove_item(&mut self, index: usize) -> Result<(), TodoError> {
-        if index > self.items.len() {
+        if self.invalid_index(index) {
             return Err(TodoError::InvalidItem(format!(
                 "Item index '{}' does not exist",
                 index
@@ -26,8 +27,48 @@ impl TodoList {
         Ok(())
     }
 
+    pub fn complete_item(&mut self, index: usize) -> Result<(), TodoError> {
+        if self.invalid_index(index) {
+            return Err(TodoError::InvalidItem(format!(
+                "Item index '{}' does not exist",
+                index
+            )));
+        }
+        self.items[index - 1].complete_item();
+        Ok(())
+    }
+
+    pub fn uncomplete_item(&mut self, index: usize) -> Result<(), TodoError> {
+        if self.invalid_index(index) {
+            return Err(TodoError::InvalidItem(format!(
+                "Item index '{}' does not exist",
+                index
+            )));
+        }
+        self.items[index - 1].uncomplete_item();
+        Ok(())
+    }
+
+    fn invalid_index(&self, index: usize) -> bool {
+        index > self.items.len()
+    }
+
     pub fn add_item(&mut self, item: TodoItem) {
         self.items.push(item);
+    }
+
+    pub fn save_to_file(&self, path: &Path) -> Result<(), std::io::Error> {
+        let file = std::fs::File::create(path)?;
+        let mut writer = BufWriter::new(file);
+        for item in self.items.iter() {
+            if item.is_complete() {
+                write!(writer, "- [x] ")?;
+            } else {
+                write!(writer, "- [ ] ")?;
+            }
+            writeln!(writer, "{}", item.get_content())?;
+        }
+        writer.flush()
     }
 }
 

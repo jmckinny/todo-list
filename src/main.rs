@@ -4,7 +4,7 @@ mod todo_error;
 use std::{
     env,
     io::{self, Write},
-    path::Path,
+    path::PathBuf,
 };
 
 use data::todo_list::TodoList;
@@ -18,22 +18,20 @@ fn main() -> Result<(), TodoError> {
 }
 
 fn get_todo_list() -> Result<TodoList, TodoError> {
-    let home_todo = format!("{}/.todo", env::var("HOME").expect("$HOME not set"));
-    let default_todofile = Path::new(&home_todo);
-    let mut todo_file = get_todo_file(default_todofile);
+    let mut todo_file = get_todo_file();
 
     if !todo_file.exists() {
-        let local = Path::new(".todo");
+        let local = PathBuf::from(".todo");
         let create_new_todo = prompt_create_new_todo_list();
         if !create_new_todo {
             eprintln!("Aborting");
             std::process::exit(1);
         }
-        std::fs::File::create_new(local)?;
+        std::fs::File::create_new(&local)?;
         todo_file = local;
     }
 
-    TodoList::from_file(todo_file)
+    TodoList::from_file(&todo_file)
 }
 
 fn prompt_create_new_todo_list() -> bool {
@@ -49,12 +47,15 @@ fn prompt_create_new_todo_list() -> bool {
     true
 }
 
-fn get_todo_file(default: &Path) -> &Path {
-    let cur_dir = Path::new(".todo");
+fn get_todo_file() -> PathBuf {
+    let home_todo = format!("{}/.todo", env::var("HOME").expect("$HOME not set"));
+    let default_todofile = PathBuf::from(home_todo);
+
+    let cur_dir = PathBuf::from(".todo");
     if cur_dir.exists() {
         return cur_dir;
     }
-    default
+    default_todofile
 }
 
 fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoError> {
@@ -67,8 +68,16 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
             commands::add::add_item(todo_list, args)?;
             commands::list::list_items(todo_list);
         }
-        "r" | "remove" => {
+        "r" | "rm" | "remove" => {
             commands::remove::remove_item_index(todo_list, args)?;
+            commands::list::list_items(todo_list);
+        }
+        "c" | "check" | "complete" => {
+            commands::complete::complete_item_index(todo_list, args)?;
+            commands::list::list_items(todo_list);
+        }
+        "u" | "un" | "uncheck" | "uncomplete" => {
+            commands::complete::uncomplete_item_index(todo_list, args)?;
             commands::list::list_items(todo_list);
         }
         _ => {

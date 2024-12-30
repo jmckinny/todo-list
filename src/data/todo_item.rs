@@ -14,6 +14,22 @@ impl TodoItem {
     pub fn new(content: String, completed: bool) -> Self {
         Self { content, completed }
     }
+
+    pub fn is_complete(&self) -> bool {
+        self.completed
+    }
+
+    pub fn get_content(&self) -> &str {
+        &self.content
+    }
+
+    pub fn complete_item(&mut self) {
+        self.completed = true;
+    }
+
+    pub fn uncomplete_item(&mut self) {
+        self.completed = false;
+    }
 }
 
 impl FromStr for TodoItem {
