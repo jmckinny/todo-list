@@ -32,7 +32,7 @@ impl TodoList {
     pub fn remove_items(&mut self, start: usize, end: usize) -> Result<(), TodoError> {
         if self.invalid_index(start) || self.invalid_index(end) {
             return Err(TodoError::InvalidItem(format!(
-                "Item indices '{}-{}' does not exist",
+                "Item indices '{}-{}' do not exist",
                 start, end
             )));
         }
