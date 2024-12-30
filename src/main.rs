@@ -1,6 +1,10 @@
 mod commands;
 mod todo_list;
-use std::{env, path::Path};
+use std::{
+    env,
+    io::{self, Write},
+    path::Path,
+};
 
 use todo_list::TodoList;
 
@@ -14,11 +18,33 @@ fn main() -> Result<(), std::io::Error> {
 fn get_todo_list() -> Result<TodoList, std::io::Error> {
     let home_todo = format!("{}/.todo", env::var("HOME").expect("$HOME not set"));
     let default_todofile = Path::new(&home_todo);
-    let todo_file = get_todo_file(default_todofile);
+    let mut todo_file = get_todo_file(default_todofile);
 
-    let todo_file_data = std::fs::read_to_string(&todo_file)?;
-    let todo_list = todo_file_data.parse()?;
-    Ok(todo_list)
+    if !todo_file.exists() {
+        let local = Path::new(".todo");
+        let create_new_todo = prompt_create_new_todo_list();
+        if !create_new_todo {
+            eprintln!("Aborting");
+            std::process::exit(1);
+        }
+        std::fs::File::create_new(local)?;
+        todo_file = local;
+    }
+
+    TodoList::from_file(todo_file)
+}
+
+fn prompt_create_new_todo_list() -> bool {
+    let mut input = String::new();
+    print!("No todo file found, create .todo locally? [Y/n] ");
+    io::stdout().flush().expect("Failed to flush stdout");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Error reading from STDIN");
+    if input.trim().to_lowercase() == "n" {
+        return false;
+    }
+    true
 }
 
 fn get_todo_file(default: &Path) -> &Path {
@@ -32,11 +58,18 @@ fn get_todo_file(default: &Path) -> &Path {
 fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), std::io::Error> {
     let command: &str = args.get(1).map(String::as_str).unwrap_or("list");
     match command {
-        "list" => {
+        "l" | "list" => {
             commands::list::list_items(todo_list);
         }
+        "a" | "add" => {
+            todo!()
+        }
+        "r" | "remove" => {
+            todo!()
+        }
         _ => {
-            eprintln!("Unrecognized command: '{}'", command)
+            eprintln!("Unrecognized command: '{}'", command);
+            std::process::exit(1);
         }
     }
     Ok(())

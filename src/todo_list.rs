@@ -1,8 +1,16 @@
+use std::path::Path;
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct TodoList {
     items: Vec<TodoItem>,
+}
+
+impl TodoList {
+    pub fn from_file(path: &Path) -> Result<Self, std::io::Error> {
+        let file_data = std::fs::read_to_string(path)?;
+        file_data.parse()
+    }
 }
 
 #[derive(Debug)]
@@ -22,9 +30,14 @@ impl FromStr for TodoList {
 
 impl std::fmt::Display for TodoList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.items.is_empty() {
+            return writeln!(f, "Nothing todo!");
+        }
+
         for (i, item) in self.items.iter().enumerate() {
             writeln!(f, "{}. {}", i + 1, item)?;
         }
+
         Ok(())
     }
 }
