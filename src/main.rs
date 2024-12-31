@@ -93,6 +93,9 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
             save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
+        "help" => {
+            commands::help::print_help();
+        }
         _ => {
             eprintln!("Unrecognized command: '{}'", command);
             std::process::exit(1);
