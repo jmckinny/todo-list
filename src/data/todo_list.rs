@@ -85,6 +85,10 @@ impl TodoList {
         Ok(())
     }
 
+    pub fn remove_completed_items(&mut self) {
+        self.items.retain(|item| !item.is_complete());
+    }
+
     pub fn get_items(&self) -> &Vec<TodoItem> {
         &self.items
     }
