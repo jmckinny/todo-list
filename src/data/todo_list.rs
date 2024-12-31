@@ -102,9 +102,9 @@ impl TodoList {
         let mut writer = BufWriter::new(file);
         for item in self.items.iter() {
             if item.is_complete() {
-                write!(writer, "{}", COMPLETED_PREFIX)?;
+                write!(writer, "{} ", COMPLETED_PREFIX)?;
             } else {
-                write!(writer, "{}", UNCOMPLETED_PREFIX)?;
+                write!(writer, "{} ", UNCOMPLETED_PREFIX)?;
             }
             writeln!(writer, "{}", item.get_content())?;
         }
