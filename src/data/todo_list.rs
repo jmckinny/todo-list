@@ -85,6 +85,10 @@ impl TodoList {
         Ok(())
     }
 
+    pub fn get_items(&self) -> &Vec<TodoItem> {
+        &self.items
+    }
+
     fn invalid_index(&self, index: usize) -> bool {
         index > self.items.len()
     }

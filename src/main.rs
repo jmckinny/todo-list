@@ -74,17 +74,17 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
             commands::list::list_items(todo_list);
         }
         "r" | "rm" | "remove" => {
-            commands::remove::remove_item_index(todo_list, args)?;
+            commands::remove::remove_item(todo_list, args)?;
             save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
         "c" | "check" | "complete" => {
-            commands::complete::complete_item_index(todo_list, args)?;
+            commands::complete::complete_item(todo_list, args)?;
             save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
         "u" | "un" | "uncheck" | "uncomplete" => {
-            commands::complete::uncomplete_item_index(todo_list, args)?;
+            commands::complete::uncomplete_item(todo_list, args)?;
             save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
