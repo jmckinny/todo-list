@@ -63,9 +63,9 @@ impl FromStr for TodoItem {
 impl std::fmt::Display for TodoItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.completed {
-            write!(f, "✅ ")?;
+            write!(f, "[x] ")?;
         } else {
-            write!(f, "🔲 ")?;
+            write!(f, "[ ] ")?;
         }
         write!(f, "{}", self.content)
     }

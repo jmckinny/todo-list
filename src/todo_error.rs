@@ -6,6 +6,10 @@ pub enum TodoError {
     ParseError(String),
     InvalidItem(String),
     ParseIndexError(ParseIntError),
+    BadCommand(String),
+    UsageError(String),
+    FuzzyMatchFailed(String),
+    Aborted,
 }
 
 impl std::fmt::Display for TodoError {
@@ -15,6 +19,10 @@ impl std::fmt::Display for TodoError {
             TodoError::ParseError(s) => writeln!(f, "Parse Error: {}", s),
             TodoError::InvalidItem(s) => writeln!(f, "Invalid item: {}", s),
             TodoError::ParseIndexError(s) => writeln!(f, "Invalid index: {}", s),
+            TodoError::BadCommand(command) => writeln!(f, "Invalid command: {}", command),
+            TodoError::UsageError(usage) => writeln!(f, "{}", usage),
+            TodoError::FuzzyMatchFailed(serach) => writeln!(f, "No item matched: '{}'", serach),
+            TodoError::Aborted => writeln!(f, "Aborting"),
         }
     }
 }
@@ -26,6 +34,10 @@ impl std::error::Error for TodoError {
             TodoError::ParseIndexError(ref error) => Some(error),
             TodoError::ParseError(_) => None,
             TodoError::InvalidItem(_) => None,
+            TodoError::BadCommand(_) => None,
+            TodoError::UsageError(_) => None,
+            TodoError::FuzzyMatchFailed(_) => None,
+            TodoError::Aborted => None,
         }
     }
 }

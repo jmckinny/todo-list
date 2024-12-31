@@ -1,19 +1,23 @@
 mod commands;
 mod data;
+mod prompts;
 mod todo_error;
-use std::{
-    env,
-    io::{self, Write},
-    path::PathBuf,
-};
+use std::{env, path::PathBuf};
 
 use data::todo_list::TodoList;
 use todo_error::TodoError;
 
-fn main() -> Result<(), TodoError> {
+fn main() {
     let args: Vec<String> = env::args().collect();
+    if let Err(e) = run_todo_cli(&args) {
+        eprint!("{}", e);
+        std::process::exit(1);
+    }
+}
+
+fn run_todo_cli(args: &[String]) -> Result<(), TodoError> {
     let mut todo_list = get_todo_list()?;
-    run_command(&args, &mut todo_list)?;
+    run_command(args, &mut todo_list)?;
     Ok(())
 }
 
@@ -22,29 +26,15 @@ fn get_todo_list() -> Result<TodoList, TodoError> {
 
     if !todo_file.exists() {
         let local = PathBuf::from(".todo");
-        let create_new_todo = prompt_create_new_todo_list();
+        let create_new_todo = prompts::prompt_create_new_todo_list();
         if !create_new_todo {
-            eprintln!("Aborting");
-            std::process::exit(1);
+            return Err(TodoError::Aborted);
         }
         std::fs::File::create_new(&local)?;
         todo_file = local;
     }
 
     TodoList::from_file(&todo_file)
-}
-
-fn prompt_create_new_todo_list() -> bool {
-    let mut input = String::new();
-    print!("No todo file found, create .todo locally? [Y/n] ");
-    io::stdout().flush().expect("Failed to flush stdout");
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Error reading from STDIN");
-    if input.trim().to_lowercase() == "n" {
-        return false;
-    }
-    true
 }
 
 fn get_todo_file() -> PathBuf {
@@ -69,7 +59,26 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
             commands::list::list_items(todo_list);
         }
         "a" | "add" | "append" => {
-            commands::add::add_item(todo_list, args)?;
+            let completed = false;
+            commands::add::add_item(todo_list, args, completed)?;
+            save_current_todo_list(todo_list)?;
+            commands::list::list_items(todo_list);
+        }
+        "as" | "adds" | "appends" => {
+            let completed = false;
+            commands::add::add_several(todo_list, args, completed)?;
+            save_current_todo_list(todo_list)?;
+            commands::list::list_items(todo_list);
+        }
+        "log" => {
+            let completed = true;
+            commands::add::add_item(todo_list, args, completed)?;
+            save_current_todo_list(todo_list)?;
+            commands::list::list_items(todo_list);
+        }
+        "logs" => {
+            let completed = true;
+            commands::add::add_several(todo_list, args, completed)?;
             save_current_todo_list(todo_list)?;
             commands::list::list_items(todo_list);
         }
@@ -96,10 +105,77 @@ fn run_command(args: &[String], todo_list: &mut TodoList) -> Result<(), TodoErro
         "help" => {
             commands::help::print_help();
         }
-        _ => {
-            eprintln!("Unrecognized command: '{}'", command);
-            std::process::exit(1);
-        }
+        _ => return Err(TodoError::BadCommand(command.to_string())),
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    macro_rules! vec_of_strings {
+        ($($x:expr),*) => (vec![$($x.to_string()),*]);
+    }
+
+    fn basic_todo_list() -> TodoList {
+        let list = [
+            "- [ ] Wash dishes",
+            "- [ ] Clean clothes",
+            "- [x] Take out trash the trash",
+            "- [ ] Laundry",
+        ];
+        let todo_list: TodoList = list.join("\n").parse().unwrap();
+        todo_list
+    }
+
+    #[test]
+    fn test_add() {
+        let mut todo_list: TodoList = TodoList::default();
+        let args = vec_of_strings!["todo", "add", "first!"];
+        let result = run_command(&args, &mut todo_list);
+        assert!(result.is_ok());
+        assert!(todo_list.get_items_len() == 1);
+    }
+
+    #[test]
+    fn test_adds() {
+        let mut todo_list: TodoList = TodoList::default();
+        let args = vec_of_strings!["todo", "adds", "first!", "second", "third"];
+        let result = run_command(&args, &mut todo_list);
+        assert!(result.is_ok());
+        assert!(todo_list.get_items_len() == 3);
+    }
+
+    #[test]
+    fn test_complete_single() {
+        let mut todo_list = basic_todo_list();
+        let args = vec_of_strings!["todo", "complete", "1"];
+        assert!(todo_list.get_number_completed() == 1);
+        let result = run_command(&args, &mut todo_list);
+        assert!(result.is_ok());
+        assert!(todo_list.get_items_len() == 4);
+        assert!(todo_list.get_number_completed() == 2);
+    }
+
+    #[test]
+    fn test_complete_range() {
+        let mut todo_list = basic_todo_list();
+        let args = vec_of_strings!["todo", "complete", "1-2"];
+        assert!(todo_list.get_number_completed() == 1);
+        let result = run_command(&args, &mut todo_list);
+        assert!(result.is_ok());
+        assert!(todo_list.get_items_len() == 4);
+        assert!(todo_list.get_number_completed() == 3);
+    }
+
+    #[test]
+    fn test_complete_list() {
+        let mut todo_list = basic_todo_list();
+        let args = vec_of_strings!["todo", "complete", "1,4"];
+        assert!(todo_list.get_number_completed() == 1);
+        let result = run_command(&args, &mut todo_list);
+        assert!(result.is_ok());
+        assert!(todo_list.get_items_len() == 4);
+        assert!(todo_list.get_number_completed() == 3);
+    }
 }

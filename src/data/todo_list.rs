@@ -93,6 +93,14 @@ impl TodoList {
         &self.items
     }
 
+    pub fn get_items_len(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn get_number_completed(&self) -> usize {
+        self.items.iter().filter(|item| item.is_complete()).count()
+    }
+
     fn invalid_index(&self, index: usize) -> bool {
         index > self.items.len()
     }

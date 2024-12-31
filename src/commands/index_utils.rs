@@ -3,9 +3,11 @@ use crate::{data::todo_list::TodoList, TodoError};
 pub enum IndexSelection {
     Single(usize),
     Range((usize, usize)),
+    List(Vec<usize>),
 }
 
 const RANGE_DELIM: char = '-';
+const LIST_DELIM: char = ',';
 
 pub fn get_index(todo_list: &TodoList, args: &[String]) -> Result<IndexSelection, TodoError> {
     let empty = String::new();
@@ -13,10 +15,14 @@ pub fn get_index(todo_list: &TodoList, args: &[String]) -> Result<IndexSelection
 
     let num_count = arg.chars().filter(|c| c.is_ascii_digit()).count();
     let contains_range_delim = arg.contains(RANGE_DELIM);
+    let contains_set_delim = arg.contains(LIST_DELIM);
 
-    if num_count > 0 && contains_range_delim {
+    if num_count > 1 && contains_range_delim {
         let range = get_index_range(args)?;
         Ok(IndexSelection::Range(range))
+    } else if num_count > 1 && contains_set_delim {
+        let index_set = get_index_list(args)?;
+        Ok(IndexSelection::List(index_set))
     } else if num_count > 0 {
         let index = get_single_index(args)?;
         Ok(IndexSelection::Single(index))
@@ -32,10 +38,10 @@ pub fn get_single_index(args: &[String]) -> Result<usize, TodoError> {
             let index: usize = index_str.parse()?;
             Ok(index)
         }
-        None => {
-            eprintln!("Usage: todo <command> <index>");
-            std::process::exit(1);
-        }
+        None => Err(TodoError::UsageError(format!(
+            "Usage: todo <{}> <index>",
+            args.get(1).map(String::as_str).unwrap_or("command")
+        ))),
     }
 }
 
@@ -47,10 +53,10 @@ pub fn get_index_range(args: &[String]) -> Result<(usize, usize), TodoError> {
             let end = indexes.next().unwrap_or_default().parse()?;
             Ok((start, end))
         }
-        None => {
-            eprintln!("Usage: todo <command> <index>,<index>");
-            std::process::exit(1);
-        }
+        None => Err(TodoError::UsageError(format!(
+            "Usage: todo <{}> <start-end>",
+            args.get(1).map(String::as_str).unwrap_or("command")
+        ))),
     }
 }
 
@@ -76,10 +82,23 @@ pub fn get_term_index(args: &[String], todo_list: &TodoList) -> Result<usize, To
 
     match min_score {
         Some((index, score)) if *score < MAX_SCORE_ALLOWED => Ok(index + 1),
-        _ => {
-            eprintln!("No match found, aborting");
-            std::process::exit(1);
+        _ => Err(TodoError::FuzzyMatchFailed(search_term.to_string())),
+    }
+}
+
+fn get_index_list(args: &[String]) -> Result<Vec<usize>, TodoError> {
+    match args.get(2) {
+        Some(lst) => {
+            let index_set: Result<Vec<_>, _> = lst
+                .split(LIST_DELIM)
+                .map(|num_str| num_str.parse())
+                .collect();
+            Ok(index_set?)
         }
+        None => Err(TodoError::UsageError(format!(
+            "Usage: todo <{}> <index,index,...>",
+            args.get(1).map(String::as_str).unwrap_or("command")
+        ))),
     }
 }
 

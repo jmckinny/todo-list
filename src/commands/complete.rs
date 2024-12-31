@@ -12,6 +12,11 @@ pub fn complete_item(todo_list: &mut TodoList, args: &[String]) -> Result<(), To
         IndexSelection::Range((start, end)) => {
             todo_list.complete_items(start, end)?;
         }
+        IndexSelection::List(lst) => {
+            for index in lst {
+                todo_list.set_item_completion(index, true)?;
+            }
+        }
     }
     Ok(())
 }
@@ -24,6 +29,11 @@ pub fn uncomplete_item(todo_list: &mut TodoList, args: &[String]) -> Result<(), 
         }
         IndexSelection::Range((start, end)) => {
             todo_list.uncomplete_items(start, end)?;
+        }
+        IndexSelection::List(lst) => {
+            for index in lst {
+                todo_list.set_item_completion(index, false)?;
+            }
         }
     }
     Ok(())
