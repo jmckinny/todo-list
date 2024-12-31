@@ -88,8 +88,8 @@ fn levenshtein_distance(target: &str, other: &str) -> usize {
     let target_len = target.chars().count();
     let other_len = other.chars().count();
     // Empty string sub-problems can just be solved by inserting i characters
-    for i in 0..=other_len {
-        matrix[i][0] = i;
+    for (i, row) in matrix.iter_mut().enumerate().take(other_len + 1) {
+        row[0] = i;
     }
 
     for j in 0..=target_len {
